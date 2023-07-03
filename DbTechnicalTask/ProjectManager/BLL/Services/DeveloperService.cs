@@ -132,20 +132,24 @@ public class DeveloperService : GenericService<User>, IDeveloperService
     {
         if (task == null) throw new ArgumentNullException(nameof(task));
         if (developer == null) throw new ArgumentNullException(nameof(developer));
-        
+
         try
         {
             task.TaskUsers.Add(developer);
             task.Progress = Progress.InProgress;
-            project.ProjectUsers.Add(developer);
+
+            var userProject = new UserProject { UserId = developer.Id, ProjectId = project.Id };
+            project.UserProjects.Add(userProject);
+
             await _projectTaskService.Update(task.Id, task);
+            await _projectService.Update(project.Id, project);
         }
         catch (Exception ex)
         {
             throw new Exception(ex.Message);
         }
     }
-    
+
     public async Task<List<ProjectTask>> GetDeveloperTasks(User developer)
     {
         if (developer == null) throw new ArgumentNullException(nameof(developer));

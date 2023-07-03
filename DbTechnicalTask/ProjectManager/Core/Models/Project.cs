@@ -10,7 +10,7 @@ public class Project : BaseEntity
     public int CountAllTasks { get; set; } = 0;
     public int CountDoneTasks { get; set; } = 0;
     public DateTime DueDates { get; set; }
-    public List<User> ProjectUsers = new List<User>();
-    public List<UserProject> UserProjects { get; set; } = new List<UserProject>();
-    public List<ProjectTask> Tasks { get; set; } = new List<ProjectTask>();
+    public virtual List<UserProject> UserProjects { get; set; } = new List<UserProject>();
+    public virtual List<ProjectTask> Tasks { get; set; } = new List<ProjectTask>();
 }
+    // public List<User> Users = new List<User>();

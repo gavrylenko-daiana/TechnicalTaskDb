@@ -9,6 +9,7 @@ public class User : BaseEntity
     public string PasswordHash { get; set; }
     public UserRole Role { get; set; }
 
-    public List<UserProject> UserProjects { get; set; } = new List<UserProject>();
-    public List<ProjectTask> AssignedTasks { get; set; } = new List<ProjectTask>();
+    public virtual List<UserProject> UserProjects { get; set; } = new List<UserProject>();
+    // public virtual List<ProjectTask> AssignedTasks { get; set; } = new List<ProjectTask>();
 }
+    // public List<Project> Projects { get; set; } = new List<Project>();

@@ -75,13 +75,13 @@ public class UserService : GenericService<User>, IUserService
     {
         if (userId == Guid.Empty) throw new ArgumentException("userId cannot be empty");
         if (string.IsNullOrWhiteSpace(newPassword)) throw new ArgumentNullException(nameof(newPassword));
-        
+
         try
         {
             User user = await GetById(userId);
-        
+
             if (user == null) throw new ArgumentNullException(nameof(user));
-    
+
             user.PasswordHash = GetPasswordHash(newPassword);
             await Update(userId, user);
         }
@@ -90,7 +90,7 @@ public class UserService : GenericService<User>, IUserService
             throw new Exception(ex.Message);
         }
     }
-    
+
     public async Task<int> SendCodeToUser(string email)
     {
         if (string.IsNullOrWhiteSpace(email)) throw new ArgumentNullException(nameof(email));

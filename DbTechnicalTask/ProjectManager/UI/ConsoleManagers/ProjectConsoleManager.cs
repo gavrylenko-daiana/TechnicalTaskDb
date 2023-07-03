@@ -25,7 +25,7 @@ public class ProjectConsoleManager : ConsoleManager<IProjectService, Project>, I
             Console.WriteLine($"Description: {project.Description}");
 
         Console.WriteLine($"Stake Holder: {getShByProject.Username} with email: {getShByProject.Email}");
-        Console.WriteLine($"Tester: {getTesterByProject.Username} with email: {getTesterByProject.Email}");
+        // Console.WriteLine($"Tester: {getTesterByProject.Username} with email: {getTesterByProject.Email}");
         Console.WriteLine($"Number of all tasks: {project.CountAllTasks}");
         Console.WriteLine($"Number of done tasks: {project.CountDoneTasks}");
         Console.WriteLine($"DueDates: {project.DueDates.Date}");

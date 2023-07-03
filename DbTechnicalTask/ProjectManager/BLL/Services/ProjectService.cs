@@ -58,8 +58,9 @@ public class ProjectService : GenericService<Project>, IProjectService
 
         try
         {
-            List<Project> projects = (await GetAll())
-                .Where(p => p.ProjectUsers.Any(u => u.Role == UserRole.StakeHolder) && p.ProjectUsers.Any(u => u.Id == stakeHolder.Id)).ToList();
+            var projects = (await GetAll())
+                .Where(p => p.UserProjects.Any(up => up.User.Role == UserRole.StakeHolder && up.UserId == stakeHolder.Id))
+                .ToList();
 
             return projects;
         }
@@ -75,7 +76,9 @@ public class ProjectService : GenericService<Project>, IProjectService
         
         try
         {
-            var projects = (await GetAll()).Where(p => p.ProjectUsers.Any(u => u.Role == UserRole.Tester) && p.ProjectUsers.Any(u => u.Id == tester.Id)).ToList();
+            var projects = (await GetAll())
+                .Where(p => p.UserProjects.Any(up => up.User.Role == UserRole.Tester && up.UserId == tester.Id))
+                .ToList();
 
             return projects;
         }
@@ -84,7 +87,7 @@ public class ProjectService : GenericService<Project>, IProjectService
             throw new Exception(ex.Message);
         }
     }
-
+    
     public async Task<Project> GetProjectByTask(ProjectTask task)
     {
         if (task == null) throw new ArgumentNullException(nameof(task));
@@ -322,16 +325,21 @@ public class ProjectService : GenericService<Project>, IProjectService
         
         try
         {
-            List<User> userWithCreateProject = new List<User>();
-            userWithCreateProject.Add(stakeHolder);
-            userWithCreateProject.Add(tester);
+            // List<User> userWithCreateProject = new List<User>();
+            // userWithCreateProject.Add(stakeHolder);
+            // userWithCreateProject.Add(tester);
 
             await Add(new Project
             {
                 Name = projectName,
                 Description = projectDescription,
                 DueDates = enteredDate,
-                ProjectUsers = userWithCreateProject
+                // Users = userWithCreateProject
+                UserProjects = new List<UserProject>
+                {
+                    new UserProject { UserId = stakeHolder.Id },
+                    new UserProject { UserId = tester.Id }
+                }
             });
 
             return projectName;
@@ -371,9 +379,12 @@ public class ProjectService : GenericService<Project>, IProjectService
             {
                 foreach (var project in projects)
                 {
-                    var idTesterProject = project.ProjectUsers.FirstOrDefault(u => u.Role == UserRole.Tester)!;
-                    project.ProjectUsers.Remove(idTesterProject);
-                    await Update(project.Id, project);
+                    var userProject = project.UserProjects.FirstOrDefault(up => up.UserId == tester.Id);
+                    if (userProject != null)
+                    {
+                        project.UserProjects.Remove(userProject);
+                        await Update(project.Id, project);
+                    }
                 }
             }
         }
@@ -382,6 +393,7 @@ public class ProjectService : GenericService<Project>, IProjectService
             throw new Exception(ex.Message);
         }
     }
+
 
     public async Task UpdateTask(ProjectTask task, List<ProjectTask> modifierTasks, Project project,
         ProjectTask newTask)
@@ -412,27 +424,28 @@ public class ProjectService : GenericService<Project>, IProjectService
     {
         try
         {
-            var sh = project.ProjectUsers.FirstOrDefault(u => u.Role == UserRole.StakeHolder);
-
-            return Task.FromResult(sh!);
+            var stakeHolder = project.UserProjects.FirstOrDefault(up => up.User.Role == UserRole.StakeHolder)?.User;
+            
+            return Task.FromResult(stakeHolder);
         }
         catch (Exception ex)
         {
             throw new Exception(ex.Message);
         }
     }
-    
+
     public Task<User> GetTesterFromProject(Project project)
     {
         try
         {
-            var tester = project.ProjectUsers.FirstOrDefault(u => u.Role == UserRole.Tester);
-
-            return Task.FromResult(tester!);
+            var tester = project.UserProjects.FirstOrDefault(up => up.User.Role == UserRole.Tester)?.User;
+            
+            return Task.FromResult(tester);
         }
         catch (Exception ex)
         {
             throw new Exception(ex.Message);
         }
     }
+
 }

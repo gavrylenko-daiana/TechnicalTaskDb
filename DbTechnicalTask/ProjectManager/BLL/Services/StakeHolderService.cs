@@ -296,9 +296,9 @@ public class StakeHolderService : GenericService<User>, IStakeHolderService
     {
         try
         {
-            var sh = project.ProjectUsers.FirstOrDefault(u => u.Role == UserRole.StakeHolder);
-
-            return Task.FromResult(sh!);
+            var stakeHolder = project.UserProjects.FirstOrDefault(up => up.User.Role == UserRole.StakeHolder)?.User;
+            
+            return Task.FromResult(stakeHolder);
         }
         catch (Exception ex)
         {
