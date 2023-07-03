@@ -185,7 +185,8 @@ public class TesterService : GenericService<User>, ITesterService
     {
         try
         {
-            var developer = task.TaskUsers.FirstOrDefault(u => u.Role == UserRole.Developer);
+            var userTask = task.AssignedUsers.FirstOrDefault(ut => ut.User.Role == UserRole.Developer);
+            var developer = userTask?.User;
 
             return Task.FromResult(developer!);
         }
@@ -199,7 +200,8 @@ public class TesterService : GenericService<User>, ITesterService
     {
         try
         {
-            var tester = task.TaskUsers.FirstOrDefault(u => u.Role == UserRole.Tester);
+            var userTask = task.AssignedUsers.FirstOrDefault(ut => ut.User.Role == UserRole.Tester);
+            var tester = userTask?.User;
 
             return Task.FromResult(tester!);
         }

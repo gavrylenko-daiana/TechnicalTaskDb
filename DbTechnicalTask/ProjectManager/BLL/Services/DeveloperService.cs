@@ -137,10 +137,10 @@ public class DeveloperService : GenericService<User>, IDeveloperService
 
         try
         {
-            task.TaskUsers.Add(developer);
+            var userTask = new UserTask { UserId = developer.Id, User = developer, ProjectTaskId = task.Id, ProjectTask = task };
+            task.AssignedUsers.Add(userTask);
             task.Progress = Progress.InProgress;
-            await _userProjectService.Add(new UserProject()
-                { UserId = developer.Id, User = developer, Project = project, ProjectId = project.Id });
+            await _userProjectService.Add(new UserProject { UserId = developer.Id, User = developer, Project = project, ProjectId = project.Id });
 
             await _projectTaskService.Update(task.Id, task);
             await _projectService.Update(project.Id, project);
@@ -203,7 +203,8 @@ public class DeveloperService : GenericService<User>, IDeveloperService
     {
         try
         {
-            var developer = task.TaskUsers.FirstOrDefault(u => u.Role == UserRole.Developer);
+            var userTask = task.AssignedUsers.FirstOrDefault(ut => ut.User.Role == UserRole.Developer);
+            var developer = userTask?.User;
 
             return Task.FromResult(developer!);
         }

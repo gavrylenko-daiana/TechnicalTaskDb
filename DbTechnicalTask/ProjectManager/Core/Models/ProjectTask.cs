@@ -10,7 +10,8 @@ public class ProjectTask : BaseEntity
     public DateTime DueDates { get; set; }
     public Priority Priority { get; set; }
     public Progress Progress { get; set; }
-    public virtual List<User> TaskUsers { get; set; } = new List<User>();
+    // public virtual List<User> TaskUsers { get; set; } = new List<User>();
+    public virtual List<UserTask> AssignedUsers { get; set; } = new List<UserTask>();
     public Guid ProjectId { get; set; }
     
     [ForeignKey("ProjectId")]

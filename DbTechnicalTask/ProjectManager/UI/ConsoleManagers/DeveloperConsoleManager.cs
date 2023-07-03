@@ -77,7 +77,6 @@ public class DeveloperConsoleManager : ConsoleManager<IDeveloperService, User>, 
 
                 foreach (var task in tasks)
                 {
-                    if (task.TaskUsers.Any(u => u.Role == UserRole.Developer) && task.Progress == Progress.Planned)
                     {
                         Console.WriteLine($"Can {developer.Username} take task {task.Name}?\nPlease, write '1' - yes or '2' - no");
                         var choice = int.Parse(Console.ReadLine()!);

@@ -16,7 +16,6 @@ public class ProjectConsoleManager : ConsoleManager<IProjectService, Project>, I
 
     private async Task DisplayProjectAsync(Project project)
     {
-        var getTesterByProject = await Service.GetTesterFromProject(project);
         var getShByProject = await Service.GetStakeHolderByProject(project);
 
         Console.WriteLine($"\nName: {project.Name}");

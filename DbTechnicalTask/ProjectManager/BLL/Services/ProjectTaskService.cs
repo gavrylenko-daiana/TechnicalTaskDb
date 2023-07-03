@@ -89,8 +89,8 @@ public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskServi
         try
         {
             var tasks = (await GetAll()).Where(t =>
-                t.TaskUsers.Any(u => u.Role == UserRole.Developer) &&
-                t.TaskUsers.Any(u => u.Id == developer.Id && t.Progress == Progress.InProgress)).ToList();
+                t.AssignedUsers.Any(ut => ut.User.Role == UserRole.Developer) &&
+                t.AssignedUsers.Any(ut => ut.UserId == developer.Id && t.Progress == Progress.InProgress)).ToList();
 
             return tasks;
         }
@@ -107,8 +107,8 @@ public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskServi
         try
         {
             var tasks = (await GetAll()).Where(t =>
-                t.TaskUsers.Any(u => u.Role == UserRole.Developer) &&
-                t.TaskUsers.Any(u => u.Id != developer.Id && t.Progress == Progress.InProgress)).ToList();
+                t.AssignedUsers.Any(ut => ut.User.Role == UserRole.Developer) &&
+                t.AssignedUsers.Any(ut => ut.UserId != developer.Id && t.Progress == Progress.InProgress)).ToList();
 
             return tasks;
         }
@@ -124,8 +124,9 @@ public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskServi
 
         try
         {
-            var tasks = (await GetAll()).Where(t => t.TaskUsers.Any(u => u.Role == UserRole.Tester) &&
-                                                    t.TaskUsers.Any(u => u.Id == tester.Id)).ToList();
+            var tasks = (await GetAll()).Where(t =>
+                t.AssignedUsers.Any(ut => ut.User.Role == UserRole.Tester) &&
+                t.AssignedUsers.Any(ut => ut.UserId == tester.Id)).ToList();
 
             return tasks;
         }
@@ -141,9 +142,9 @@ public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskServi
 
         try
         {
-            var tasks = (await GetAll()).Where(t => t.TaskUsers.Any(u => u.Role == UserRole.Tester) &&
-                                                    t.TaskUsers.Any(u => u.Id == tester.Id
-                                                                         && t.Progress == Progress.WaitingTester)).ToList();
+            var tasks = (await GetAll()).Where(t =>
+                t.AssignedUsers.Any(ut => ut.User.Role == UserRole.Tester) &&
+                t.AssignedUsers.Any(ut => ut.UserId == tester.Id && t.Progress == Progress.WaitingTester)).ToList();
 
             return tasks;
         }
@@ -206,9 +207,12 @@ public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskServi
             {
                 foreach (var task in tasks)
                 {
-                    var idTesterTask = task.TaskUsers.FirstOrDefault(u => u.Role == UserRole.Tester)!;
-                    task.TaskUsers.Remove(idTesterTask);
-                    await Update(task.Id, task);
+                    var userTask = task.AssignedUsers.FirstOrDefault(ut => ut.User.Role == UserRole.Tester);
+                    if (userTask != null)
+                    {
+                        task.AssignedUsers.Remove(userTask);
+                        await Update(task.Id, task);
+                    }
                 }
             }
         }
@@ -228,9 +232,12 @@ public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskServi
             {
                 foreach (var task in tasks)
                 {
-                    var idDeveloperTask = task.TaskUsers.FirstOrDefault(u => u.Role == UserRole.Developer)!;
-                    task.TaskUsers.Remove(idDeveloperTask);
-                    await Update(task.Id, task);
+                    var userTask = task.AssignedUsers.FirstOrDefault(ut => ut.User.Role == UserRole.Developer);
+                    if (userTask != null)
+                    {
+                        task.AssignedUsers.Remove(userTask);
+                        await Update(task.Id, task);
+                    }
                 }
             }
         }
@@ -346,17 +353,19 @@ public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskServi
 
         try
         {
-            List<User> userWithCreateTask = new List<User>();
+            var userWithCreateTask = new List<User>();
             userWithCreateTask.Add(stakeHolder);
             userWithCreateTask.Add(tester);
-            
+
+            var userTasks = userWithCreateTask.Select(user => new UserTask { UserId = user.Id, User = user }).ToList();
+
             var task = new ProjectTask
             {
                 Name = taskName,
                 Description = taskDescription,
                 DueDates = term,
                 Priority = priority,
-                TaskUsers = userWithCreateTask,
+                AssignedUsers = userTasks,
                 ProjectId = project.Id,
                 Project = project
             };
@@ -374,7 +383,8 @@ public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskServi
     {
         try
         {
-            var developer = task.TaskUsers.FirstOrDefault(u => u.Role == UserRole.Developer);
+            var userTask = task.AssignedUsers.FirstOrDefault(ut => ut.User.Role == UserRole.Developer);
+            var developer = userTask?.User;
 
             return Task.FromResult(developer!);
         }
@@ -388,7 +398,8 @@ public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskServi
     {
         try
         {
-            var tester = task.TaskUsers.FirstOrDefault(u => u.Role == UserRole.Tester);
+            var userTask = task.AssignedUsers.FirstOrDefault(ut => ut.User.Role == UserRole.Tester);
+            var tester = userTask?.User;
 
             return Task.FromResult(tester!);
         }
