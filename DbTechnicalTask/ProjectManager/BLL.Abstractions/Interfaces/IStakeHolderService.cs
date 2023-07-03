@@ -20,7 +20,7 @@ public interface IStakeHolderService : IGenericService<User>
     Task<DateTime> UpdateDueDateInProjectAsync(string[] date);
 
     Task CreateProjectAsync(string projectName, string projectDescription, User stakeHolder,
-        DateTime enteredDate, User tester);
+        DateTime enteredDate);
 
     Task<User> GetTesterByNameAsync(string name);
 

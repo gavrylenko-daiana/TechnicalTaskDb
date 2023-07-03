@@ -32,8 +32,8 @@ public interface IProjectService : IGenericService<Project>
 
     Task DeleteCurrentTaskAsync(ProjectTask task);
 
-    Task<string> CreateProject(string projectName, string projectDescription, User stakeHolder,
-        DateTime enteredDate, User tester);
+    Task CreateProject(string projectName, string projectDescription, User stakeHolder,
+        DateTime enteredDate);
 
     Task AddTaskToProject(Project project, List<ProjectTask> tasks);
 

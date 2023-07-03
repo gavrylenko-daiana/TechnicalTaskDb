@@ -13,4 +13,3 @@ public class Project : BaseEntity
     public virtual List<UserProject> UserProjects { get; set; } = new List<UserProject>();
     public virtual List<ProjectTask> Tasks { get; set; } = new List<ProjectTask>();
 }
-    // public List<User> Users = new List<User>();

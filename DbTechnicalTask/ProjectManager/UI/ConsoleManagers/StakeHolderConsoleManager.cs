@@ -222,18 +222,18 @@ public class StakeHolderConsoleManager : ConsoleManager<IStakeHolderService, Use
             Console.Write("Enter a due date for the project.\nDue date (dd.MM.yyyy): ");
             string[] date = Console.ReadLine()!.Split('.');
             DateTime enteredDate = await Service.UpdateDueDateInProjectAsync(date);
-            await _testerManager.DisplayNameOfAllTester();
-            Console.Write("\nWrite the username of the person who will be the tester for this project.\nTester: ");
-            string testerName = Console.ReadLine()!;
-            var tester = await Service.GetTesterByNameAsync(testerName);
+            // await _testerManager.DisplayNameOfAllTester();
+            // Console.Write("\nWrite the username of the person who will be the tester for this project.\nTester: ");
+            // string testerName = Console.ReadLine()!;
+            // var tester = await Service.GetTesterByNameAsync(testerName);
             
-            if (tester == null)
-            {
-                Console.WriteLine(nameof(tester));
-                return;
-            }
+            // if (tester == null)
+            // {
+            //     Console.WriteLine(nameof(tester));
+            //     return;
+            // }
 
-            await Service.CreateProjectAsync(projectName, projectDescription, stakeHolder, enteredDate, tester);
+            await Service.CreateProjectAsync(projectName, projectDescription, stakeHolder, enteredDate);
         }
         catch (Exception ex)
         {

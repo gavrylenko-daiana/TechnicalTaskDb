@@ -12,15 +12,13 @@ public class StakeHolderService : GenericService<User>, IStakeHolderService
     private readonly IProjectService _projectService;
     private readonly ITesterService _testerService;
     private readonly IProjectTaskService _projectTaskService;
-    private readonly IUserProjectService _userProjectService;
 
     public StakeHolderService(IRepository<User> repository, IProjectService projectService,
-        ITesterService testerService, IProjectTaskService projectTaskService, IUserProjectService userProjectService) : base(repository)
+        ITesterService testerService, IProjectTaskService projectTaskService) : base(repository)
     {
         _projectService = projectService;
         _testerService = testerService;
         _projectTaskService = projectTaskService;
-        _userProjectService = userProjectService;
     }
 
     public async Task<User> GetStakeHolderByUsernameOrEmail(string input)
@@ -149,21 +147,20 @@ public class StakeHolderService : GenericService<User>, IStakeHolderService
     }
 
     public async Task CreateProjectAsync(string projectName, string projectDescription, User stakeHolder,
-        DateTime enteredDate, User tester)
+        DateTime enteredDate)
     {
         if (stakeHolder == null) throw new ArgumentNullException(nameof(stakeHolder));
-        if (tester == null) throw new ArgumentNullException(nameof(tester));
         if (string.IsNullOrWhiteSpace(projectName)) throw new ArgumentNullException(nameof(projectName));
         if (string.IsNullOrWhiteSpace(projectDescription)) throw new ArgumentNullException(nameof(projectDescription));
         if (enteredDate == default(DateTime)) throw new ArgumentException("date cannot be empty");
 
         try
         {
-            var nameOfProject = await _projectService.CreateProject(projectName, projectDescription, stakeHolder, enteredDate, tester);
-            var project = await _projectService.GetProjectByName(nameOfProject);
-            await _userProjectService.AddUserAndProject(stakeHolder, project);
-            var getUserProject = await _userProjectService.GetUserAndProject(project.Id);
-            stakeHolder.UserProjects.Add(getUserProject);
+            await _projectService.CreateProject(projectName, projectDescription, stakeHolder, enteredDate);
+            // var project = await _projectService.GetProjectByName(nameOfProject);
+            // await _userProjectService.AddUserAndProject(stakeHolder, project);
+            // var getUserProject = await _userProjectService.GetUserAndProject(project.Id);
+            // stakeHolder.UserProjects.Add(getUserProject);
         }
         catch (Exception ex)
         {

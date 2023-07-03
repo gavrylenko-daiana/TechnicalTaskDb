@@ -10,12 +10,14 @@ public class ProjectService : GenericService<Project>, IProjectService
 {
     private readonly IProjectTaskService _projectTaskService;
     private readonly IUserService _userService;
+    private readonly IUserProjectService _userProjectService;
 
     public ProjectService(IRepository<Project> repository, IProjectTaskService projectTaskService,
-        IUserService userService) : base(repository)
+        IUserService userService, IUserProjectService userProjectService) : base(repository)
     {
         _projectTaskService = projectTaskService;
         _userService = userService;
+        _userProjectService = userProjectService;
     }
 
     public async Task<bool> ProjectIsAlreadyExist(string userInput)
@@ -314,11 +316,10 @@ public class ProjectService : GenericService<Project>, IProjectService
         }
     }
 
-    public async Task<string> CreateProject(string projectName, string projectDescription, User stakeHolder,
-        DateTime enteredDate, User tester)
+    public async Task CreateProject(string projectName, string projectDescription, User stakeHolder,
+        DateTime enteredDate)
     {
         if (stakeHolder == null) throw new ArgumentNullException(nameof(stakeHolder));
-        if (tester == null) throw new ArgumentNullException(nameof(tester));
         if (string.IsNullOrWhiteSpace(projectName)) throw new ArgumentNullException(nameof(projectName));
         if (string.IsNullOrWhiteSpace(projectDescription)) throw new ArgumentNullException(nameof(projectDescription));
         if (enteredDate == default(DateTime)) throw new ArgumentException("date cannot be empty");
@@ -329,20 +330,24 @@ public class ProjectService : GenericService<Project>, IProjectService
             // userWithCreateProject.Add(stakeHolder);
             // userWithCreateProject.Add(tester);
 
-            await Add(new Project
+            var project = new Project
             {
                 Name = projectName,
                 Description = projectDescription,
-                DueDates = enteredDate,
-                // Users = userWithCreateProject
-                UserProjects = new List<UserProject>
-                {
-                    new UserProject { UserId = stakeHolder.Id },
-                    new UserProject { UserId = tester.Id }
-                }
-            });
+                DueDates = enteredDate
+            };
+            
+            await Add(project);
 
-            return projectName;
+            var userProject = new UserProject
+            {
+                UserId = stakeHolder.Id,
+                ProjectId = project.Id,
+                User = stakeHolder,
+                Project = project
+            };
+            
+            await _userProjectService.Add(userProject);
         }
         catch (Exception ex)
         {

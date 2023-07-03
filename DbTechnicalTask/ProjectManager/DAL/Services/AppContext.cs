@@ -27,12 +27,12 @@ public class AppContext : DbContext
     {
         modelBuilder.Entity<UserProject>()
             .HasKey(up => new { up.UserId, up.ProjectId });
-
+    
         modelBuilder.Entity<UserProject>()
             .HasOne(up => up.User)
             .WithMany(u => u.UserProjects)
             .HasForeignKey(up => up.UserId);
-
+    
         modelBuilder.Entity<UserProject>()
             .HasOne(up => up.Project)
             .WithMany(p => p.UserProjects)

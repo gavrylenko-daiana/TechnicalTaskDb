@@ -82,7 +82,7 @@ public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskServi
         }
     }
 
-      public async Task<List<ProjectTask>> GetTasksByDeveloper(User developer)
+    public async Task<List<ProjectTask>> GetTasksByDeveloper(User developer)
     {
         if (developer == null) throw new ArgumentNullException(nameof(developer));
 

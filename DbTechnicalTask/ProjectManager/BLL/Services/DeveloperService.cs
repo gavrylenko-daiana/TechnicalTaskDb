@@ -9,11 +9,13 @@ public class DeveloperService : GenericService<User>, IDeveloperService
 {
     private readonly IProjectService _projectService;
     private readonly IProjectTaskService _projectTaskService;
+    private readonly IUserProjectService _userProjectService;
     
-    public DeveloperService(IRepository<User> repository, IProjectService projectService, IProjectTaskService projectTaskService) : base(repository)
+    public DeveloperService(IRepository<User> repository, IProjectService projectService, IProjectTaskService projectTaskService, IUserProjectService userProjectService) : base(repository)
     {
         _projectService = projectService;
         _projectTaskService = projectTaskService;
+        _userProjectService = userProjectService;
     }
 
     public async Task<User> GetDeveloperByUsernameOrEmail(string? input)
@@ -137,9 +139,8 @@ public class DeveloperService : GenericService<User>, IDeveloperService
         {
             task.TaskUsers.Add(developer);
             task.Progress = Progress.InProgress;
-
-            var userProject = new UserProject { UserId = developer.Id, ProjectId = project.Id };
-            project.UserProjects.Add(userProject);
+            await _userProjectService.Add(new UserProject()
+                { UserId = developer.Id, User = developer, Project = project, ProjectId = project.Id });
 
             await _projectTaskService.Update(task.Id, task);
             await _projectService.Update(project.Id, project);
