@@ -17,6 +17,7 @@ public class DependencyRegistration
         services.AddScoped<IStakeHolderService, StakeHolderService>();
         services.AddScoped<ITaskFileService, TaskFileService>();
         services.AddScoped<IUserProjectService, UserProjectService>();
+        services.AddScoped<IUserTaskService, UserTaskService>();
 
         DAL.DependencyRegistration.RegisterRepositories(services, configurationString);
     }

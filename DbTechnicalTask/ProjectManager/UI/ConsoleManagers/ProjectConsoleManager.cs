@@ -24,7 +24,7 @@ public class ProjectConsoleManager : ConsoleManager<IProjectService, Project>, I
             Console.WriteLine($"Description: {project.Description}");
 
         Console.WriteLine($"Stake Holder: {getShByProject.Username} with email: {getShByProject.Email}");
-        Console.WriteLine($"Number of all tasks: {project.CountAllTasks}");
+        Console.WriteLine($"Number of all tasks: {project.Tasks.Count}");
         Console.WriteLine($"Number of done tasks: {project.CountDoneTasks}");
         Console.WriteLine($"DueDates: {project.DueDates.Date}");
 
@@ -60,8 +60,7 @@ public class ProjectConsoleManager : ConsoleManager<IProjectService, Project>, I
 
         foreach (var project in projects)
         {
-            var sh = await Service.GetStakeHolderByProject(project);
-            await DisplayProjectsAsync(sh);
+            await DisplayProjectAsync(project);
         }
     }
 
@@ -78,11 +77,11 @@ public class ProjectConsoleManager : ConsoleManager<IProjectService, Project>, I
         foreach (var project in projects)
         {
             Console.WriteLine($"{project.Name} has {project.CountDoneTasks} approve task " +
-                              $"out of {project.CountAllTasks}.");
+                              $"out of {project.Tasks.Count}.");
 
             var tasks = await Service.GetCompletedTask(project);
 
-            if (project.CountDoneTasks == project.CountAllTasks && tasks.Any())
+            if (project.CountDoneTasks == project.Tasks.Count && tasks.Any())
             {
                 await DisplayProjectAsync(project);
                 Console.WriteLine("Do you want to approve this project?\nEnter 1 - Yes, 2 - No");

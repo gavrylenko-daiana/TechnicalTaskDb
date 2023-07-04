@@ -46,7 +46,7 @@ public class DeveloperConsoleManager : ConsoleManager<IDeveloperService, User>, 
 
             Console.Write("Enter the operation number: ");
             string input = Console.ReadLine()!;
-            
+
             if (input == "6")
             {
                 await actions[input](user);
@@ -58,14 +58,14 @@ public class DeveloperConsoleManager : ConsoleManager<IDeveloperService, User>, 
             else Console.WriteLine("Invalid operation number.");
         }
     }
-    
+
     private async Task AssignTasksToDeveloperAsync(User developer)
     {
         try
-        { 
+        {
             await _projectManager.DisplayAllProjectsAsync();
 
-            Console.WriteLine("Write the name of the project from which you want to take tasks.");
+            Console.WriteLine("\nWrite the name of the project from which you want to take tasks.");
             var projectName = Console.ReadLine()!;
 
             var project = await Service.GetProjectByNameAsync(projectName);
@@ -73,12 +73,14 @@ public class DeveloperConsoleManager : ConsoleManager<IDeveloperService, User>, 
 
             if (tasks.Count != 0)
             {
-                await _projectTaskManager.DisplayAllTaskByProject(tasks);
+                await _projectTaskManager.DisplayAllTaskByProjectPlanned(tasks);
 
                 foreach (var task in tasks)
                 {
+                    if (task.Progress == Progress.Planned)
                     {
-                        Console.WriteLine($"Can {developer.Username} take task {task.Name}?\nPlease, write '1' - yes or '2' - no");
+                        Console.WriteLine(
+                            $"Can {developer.Username} take task {task.Name}?\nPlease, write '1' - yes or '2' - no");
                         var choice = int.Parse(Console.ReadLine()!);
 
                         if (choice == 1)
@@ -86,7 +88,7 @@ public class DeveloperConsoleManager : ConsoleManager<IDeveloperService, User>, 
                             await Service.TakeTaskByDeveloper(task, developer, project);
                             await _projectManager.UpdateAsync(project.Id, project);
 
-                            await Service.SendMailToUserAsync(developer.Email, "The task has been changed from Planned to InProgress");
+                            //await Service.SendMailToUserAsync(developer.Email, "The task has been changed from Planned to InProgress");
                         }
                     }
                 }
@@ -121,8 +123,10 @@ public class DeveloperConsoleManager : ConsoleManager<IDeveloperService, User>, 
                         var taskDeveloperEmail = await Service.GetDeveloperFromTask(task);
                         await Service.UpdateProgressToWaitTester(task);
 
-                        await Service.SendMailToUserAsync(developer.Email, $"The task - {task.Name} has been changed from InProgress to WaitingTester");
-                        await Service.SendMailToUserAsync(taskDeveloperEmail.Email, "A new task - {task.Name} awaits your review.");
+                        await Service.SendMailToUserAsync(developer.Email,
+                            $"The task - {task.Name} has been changed from InProgress to WaitingTester");
+                        await Service.SendMailToUserAsync(taskDeveloperEmail.Email,
+                            "A new task - {task.Name} awaits your review.");
                     }
                 }
             }
@@ -135,7 +139,7 @@ public class DeveloperConsoleManager : ConsoleManager<IDeveloperService, User>, 
         Console.WriteLine($"Email: {developer.Email}");
 
         var tasks = await Service.GetDeveloperTasks(developer);
-        
+
         if (tasks.Any())
         {
             Console.WriteLine($"Your current task(s): ");
@@ -175,7 +179,7 @@ public class DeveloperConsoleManager : ConsoleManager<IDeveloperService, User>, 
     private async Task DeleteDeveloperAsync(User developer)
     {
         Console.WriteLine("Are you sure? 1 - Yes, 2 - No");
-        int choice = int.Parse(Console.ReadLine()!);    
+        int choice = int.Parse(Console.ReadLine()!);
 
         if (choice == 1)
         {

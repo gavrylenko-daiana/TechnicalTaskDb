@@ -43,6 +43,22 @@ public class ProjectTaskConsoleManager : ConsoleManager<IProjectTaskService, Pro
             Console.WriteLine("Tasks list is empty");
         }
     }
+    
+    public async Task DisplayAllTaskByProjectPlanned(List<ProjectTask> tasks)
+    {
+        if (tasks.Any())
+        {
+            foreach (var task in tasks)
+            {
+                if (task.Progress == Progress.Planned)
+                    await DisplayTaskAsync(task);
+            }
+        }
+        else
+        {
+            Console.WriteLine("Tasks list is empty");
+        }
+    }
 
     public async Task DisplayAllTasks()
     {

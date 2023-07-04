@@ -10,12 +10,15 @@ public class DeveloperService : GenericService<User>, IDeveloperService
     private readonly IProjectService _projectService;
     private readonly IProjectTaskService _projectTaskService;
     private readonly IUserProjectService _userProjectService;
-    
-    public DeveloperService(IRepository<User> repository, IProjectService projectService, IProjectTaskService projectTaskService, IUserProjectService userProjectService) : base(repository)
+    private readonly IUserTaskService _userTask;
+
+    public DeveloperService(IRepository<User> repository, IProjectService projectService,
+        IProjectTaskService projectTaskService, IUserProjectService userProjectService, IUserTaskService userTask) : base(repository)
     {
         _projectService = projectService;
         _projectTaskService = projectTaskService;
         _userProjectService = userProjectService;
+        _userTask = userTask;
     }
 
     public async Task<User> GetDeveloperByUsernameOrEmail(string? input)
@@ -24,8 +27,9 @@ public class DeveloperService : GenericService<User>, IDeveloperService
 
         try
         {
-            User stakeHolder = await GetByPredicate(u => u.Role == UserRole.Developer && (u.Username == input  || u.Email == input));
-        
+            User stakeHolder = await GetByPredicate(u =>
+                u.Role == UserRole.Developer && (u.Username == input || u.Email == input));
+
             if (stakeHolder == null) throw new ArgumentNullException(nameof(stakeHolder));
 
             return stakeHolder;
@@ -35,7 +39,7 @@ public class DeveloperService : GenericService<User>, IDeveloperService
             throw new Exception(ex.Message);
         }
     }
-    
+
     public async Task<IEnumerable<User>> GetAllDeveloper()
     {
         try
@@ -49,11 +53,11 @@ public class DeveloperService : GenericService<User>, IDeveloperService
             throw new Exception(ex.Message);
         }
     }
-    
+
     public async Task UpdateProjectByTask(ProjectTask task)
     {
         if (task == null) throw new ArgumentNullException(nameof(task));
-        
+
         try
         {
             var project = await _projectService.GetProjectByTask(task);
@@ -64,11 +68,11 @@ public class DeveloperService : GenericService<User>, IDeveloperService
             throw new Exception(ex.Message);
         }
     }
-    
+
     private async Task<Project> GetProjectByTaskAsync(ProjectTask task)
     {
         if (task == null) throw new ArgumentNullException(nameof(task));
-        
+
         try
         {
             var project = await _projectService.GetProjectByTask(task);
@@ -84,7 +88,7 @@ public class DeveloperService : GenericService<User>, IDeveloperService
     public async Task UpdateProgressToWaitTester(ProjectTask task)
     {
         if (task == null) throw new ArgumentNullException(nameof(task));
-        
+
         try
         {
             task.Progress = Progress.WaitingTester;
@@ -102,7 +106,7 @@ public class DeveloperService : GenericService<User>, IDeveloperService
     public async Task<Project> GetProjectByNameAsync(string projectName)
     {
         if (string.IsNullOrWhiteSpace(projectName)) throw new ArgumentNullException(nameof(projectName));
-        
+
         try
         {
             var project = await _projectService.GetProjectByName(projectName);
@@ -114,12 +118,12 @@ public class DeveloperService : GenericService<User>, IDeveloperService
             throw new Exception(ex.Message);
         }
     }
-    
+
     public async Task SendMailToUserAsync(string email, string message)
     {
         if (string.IsNullOrWhiteSpace(email)) throw new ArgumentNullException(nameof(email));
         if (string.IsNullOrWhiteSpace(message)) throw new ArgumentNullException(nameof(message));
-        
+
         try
         {
             await _projectService.SendMailToUser(email, message);
@@ -137,10 +141,22 @@ public class DeveloperService : GenericService<User>, IDeveloperService
 
         try
         {
-            var userTask = new UserTask { UserId = developer.Id, User = developer, ProjectTaskId = task.Id, ProjectTask = task };
-            task.AssignedUsers.Add(userTask);
+            var userTaskDeveloper = new UserTask
+                { UserId = developer.Id, User = developer, ProjectTaskId = task.Id, ProjectTask = task };
+            await _userTask.Add(userTaskDeveloper);
             task.Progress = Progress.InProgress;
-            await _userProjectService.Add(new UserProject { UserId = developer.Id, User = developer, Project = project, ProjectId = project.Id });
+
+            if (!await _userProjectService.IsUserInProject(developer.Id, project.Id))
+            {
+                var userProjectDeveloper = new UserProject
+                {
+                    UserId = developer.Id,
+                    ProjectId = project.Id,
+                    User = developer,
+                    Project = project
+                };
+                await _userProjectService.Add(userProjectDeveloper);
+            }
 
             await _projectTaskService.Update(task.Id, task);
             await _projectService.Update(project.Id, project);
@@ -154,11 +170,11 @@ public class DeveloperService : GenericService<User>, IDeveloperService
     public async Task<List<ProjectTask>> GetDeveloperTasks(User developer)
     {
         if (developer == null) throw new ArgumentNullException(nameof(developer));
-        
+
         try
         {
             var tasks = await _projectTaskService.GetTasksByDeveloper(developer);
-            
+
             return tasks;
         }
         catch
@@ -166,15 +182,15 @@ public class DeveloperService : GenericService<User>, IDeveloperService
             throw new Exception($"Task list is empty.");
         }
     }
-    
+
     public async Task<List<ProjectTask>> GetTasksAnotherDeveloperAsync(User developer)
     {
         if (developer == null) throw new ArgumentNullException(nameof(developer));
-        
+
         try
         {
             var tasks = await _projectTaskService.GetTasksAnotherDeveloper(developer);
-            
+
             return tasks;
         }
         catch
@@ -186,7 +202,7 @@ public class DeveloperService : GenericService<User>, IDeveloperService
     public async Task DeleteDeveloperFromTasks(User developer)
     {
         if (developer == null) throw new ArgumentNullException(nameof(developer));
-        
+
         try
         {
             var tasks = await GetDeveloperTasks(developer);
@@ -198,7 +214,7 @@ public class DeveloperService : GenericService<User>, IDeveloperService
             throw new Exception(ex.Message);
         }
     }
-    
+
     public Task<User> GetDeveloperFromTask(ProjectTask task)
     {
         try

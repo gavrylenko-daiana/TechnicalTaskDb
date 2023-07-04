@@ -33,7 +33,47 @@ public class UserProjectService : GenericService<UserProject>, IUserProjectServi
 
     public async Task<UserProject> GetUserAndProject(Guid projectId)
     {
+        if (projectId == Guid.Empty) throw new Exception(nameof(projectId));
+        
         var userProject = await GetByPredicate(up => up.ProjectId == projectId);
+        
         return userProject;
+    }
+
+    public async Task<bool> IsUserInProject(Guid userId, Guid projectId)
+    {
+        if (userId == Guid.Empty) throw new Exception(nameof(userId));
+        if (projectId == Guid.Empty) throw new Exception(nameof(projectId));
+
+        try
+        {
+            var userProject = await GetUserProjectByUserIdAndProjectId(userId, projectId);
+        
+            return userProject != null;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            throw;
+        }
+    }
+    
+    public async Task<UserProject> GetUserProjectByUserIdAndProjectId(Guid userId, Guid projectId)
+    {
+        if (userId == Guid.Empty) throw new Exception(nameof(userId));
+        if (projectId == Guid.Empty) throw new Exception(nameof(projectId));
+
+        try
+        {
+            var userProject = await GetAll();
+            var getUserProject = userProject.FirstOrDefault(up => up.UserId == userId && up.ProjectId == projectId);
+
+            return getUserProject!;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            throw;
+        }
     }
 }

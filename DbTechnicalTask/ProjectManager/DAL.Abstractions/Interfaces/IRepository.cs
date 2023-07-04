@@ -7,7 +7,7 @@ namespace DAL.Abstractions.Interfaces;
 
 public interface IRepository<T> where T : BaseEntity
 {
-    Task<Result<List<T>>> GetAllAsync(int pageNumber = 1, int pageSize = 10);
+    Task<Result<List<T>>> GetAllAsync(int pageNumber = 1, int pageSize = 20);
     
     Task<Result<T?>> GetByIdAsync(Guid id);
     

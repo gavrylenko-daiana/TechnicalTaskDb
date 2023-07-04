@@ -9,10 +9,15 @@ namespace BLL.Services;
 public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskService
 {
     private readonly ITaskFileService _taskFile;
-    
-    public ProjectTaskService(IRepository<ProjectTask> repository, ITaskFileService taskFile) : base(repository)
+    private readonly IUserTaskService _userTask;
+    private readonly IUserProjectService _userProjectService;
+
+    public ProjectTaskService(IRepository<ProjectTask> repository, ITaskFileService taskFile, IUserTaskService userTask,
+        IUserProjectService userProjectService) : base(repository)
     {
         _taskFile = taskFile;
+        _userTask = userTask;
+        _userProjectService = userProjectService;
     }
 
     public async Task<bool> ProjectTaskIsAlreadyExist(string userInput)
@@ -106,11 +111,15 @@ public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskServi
 
         try
         {
-            var tasks = (await GetAll()).Where(t =>
-                t.AssignedUsers.Any(ut => ut.User.Role == UserRole.Developer) &&
-                t.AssignedUsers.Any(ut => ut.UserId != developer.Id && t.Progress == Progress.InProgress)).ToList();
+            var tasks = await GetAll();
 
-            return tasks;
+            var tasksToReview = tasks.Where(t =>
+                    t.AssignedUsers.Any(ut =>
+                        ut.User != null && ut.User.Role == UserRole.Developer && !ut.UserId.Equals(developer.Id)) &&
+                    t.Progress == Progress.InProgress)
+                .ToList();
+
+            return tasksToReview;
         }
         catch (Exception ex)
         {
@@ -269,7 +278,7 @@ public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskServi
     {
         if (task == null) throw new ArgumentNullException(nameof(task));
         if (date == null) throw new ArgumentNullException(nameof(date));
-        
+
         try
         {
             task.DueDates = new DateTime(int.Parse(date[2]), int.Parse(date[1]), int.Parse(date[0]));
@@ -353,23 +362,47 @@ public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskServi
 
         try
         {
-            var userWithCreateTask = new List<User>();
-            userWithCreateTask.Add(stakeHolder);
-            userWithCreateTask.Add(tester);
-
-            var userTasks = userWithCreateTask.Select(user => new UserTask { UserId = user.Id, User = user }).ToList();
-
             var task = new ProjectTask
             {
                 Name = taskName,
                 Description = taskDescription,
                 DueDates = term,
                 Priority = priority,
-                AssignedUsers = userTasks,
                 ProjectId = project.Id,
                 Project = project
             };
             await Add(task);
+
+            var userProjectTaskStakeHolder = new UserTask
+            {
+                UserId = stakeHolder.Id,
+                ProjectTaskId = task.Id,
+                User = stakeHolder,
+                ProjectTask = task
+            };
+
+            var userProjectTaskTester = new UserTask
+            {
+                UserId = tester.Id,
+                ProjectTaskId = task.Id,
+                User = tester,
+                ProjectTask = task
+            };
+
+            await _userTask.Add(userProjectTaskStakeHolder);
+            await _userTask.Add(userProjectTaskTester);
+
+            if (!await _userProjectService.IsUserInProject(tester.Id, project.Id))
+            {
+                var userProjectTester = new UserProject
+                {
+                    UserId = tester.Id,
+                    ProjectId = project.Id,
+                    User = tester,
+                    Project = project
+                };
+                await _userProjectService.Add(userProjectTester);
+            }
 
             return task;
         }
@@ -378,7 +411,7 @@ public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskServi
             throw new Exception(ex.Message);
         }
     }
-    
+
     public Task<User> GetDeveloperFromTask(ProjectTask task)
     {
         try
@@ -393,7 +426,7 @@ public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskServi
             throw new Exception(ex.Message);
         }
     }
-    
+
     public Task<User> GetTesterFromTask(ProjectTask task)
     {
         try

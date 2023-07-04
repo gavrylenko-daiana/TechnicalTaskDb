@@ -17,7 +17,7 @@ namespace DAL.Services
             _dbSet = context.Set<T>();
         }
 
-        public async Task<Result<List<T>>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+        public async Task<Result<List<T>>> GetAllAsync(int pageNumber = 1, int pageSize = 20)
         {
             try
             {

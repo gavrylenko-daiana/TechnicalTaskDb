@@ -71,7 +71,7 @@ public class ProjectService : GenericService<Project>, IProjectService
             throw new Exception(ex.Message);
         }
     }
-
+    
     public async Task<List<Project>> GetProjectByTester(User tester)
     {
         if (tester == null) throw new ArgumentNullException(nameof(tester));
@@ -96,9 +96,10 @@ public class ProjectService : GenericService<Project>, IProjectService
         
         try
         {
-            var project = await GetByPredicate(p => p.Tasks.Any(t => t.Id == task.Id));
+            var projects = await GetAll();
+            Project getProject = projects.FirstOrDefault(p => p.Tasks.Any(t => t.Name == task.Name))!;
 
-            return project;
+            return getProject;
         }
         catch (Exception ex)
         {
@@ -263,7 +264,6 @@ public class ProjectService : GenericService<Project>, IProjectService
         try
         {
             project.Tasks.RemoveAll(x => x.Id == task.Id);
-            project.CountAllTasks -= 1;
             await Update(project.Id, project);
             await _projectTaskService.DeleteTask(task);
         }
@@ -326,10 +326,6 @@ public class ProjectService : GenericService<Project>, IProjectService
         
         try
         {
-            // List<User> userWithCreateProject = new List<User>();
-            // userWithCreateProject.Add(stakeHolder);
-            // userWithCreateProject.Add(tester);
-
             var project = new Project
             {
                 Name = projectName,
@@ -338,7 +334,7 @@ public class ProjectService : GenericService<Project>, IProjectService
             };
             
             await Add(project);
-
+            
             var userProject = new UserProject
             {
                 UserId = stakeHolder.Id,
@@ -346,7 +342,6 @@ public class ProjectService : GenericService<Project>, IProjectService
                 User = stakeHolder,
                 Project = project
             };
-            
             await _userProjectService.Add(userProject);
         }
         catch (Exception ex)
@@ -363,7 +358,6 @@ public class ProjectService : GenericService<Project>, IProjectService
         try
         {
             project.Tasks.AddRange(tasks);
-            project.CountAllTasks = project.Tasks.Count;
             await Update(project.Id, project);
         }
         catch (Exception ex)
