@@ -296,9 +296,14 @@ public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskServi
 
         try
         {
-            foreach (var task in project.Tasks)
+            if (project.Tasks.Count != 0)
             {
-                await Delete(task.Id);
+                var tasksCopy = project.Tasks.ToList();
+
+                foreach (var task in tasksCopy)
+                {
+                    await Delete(task.Id);
+                }
             }
         }
         catch (Exception ex)

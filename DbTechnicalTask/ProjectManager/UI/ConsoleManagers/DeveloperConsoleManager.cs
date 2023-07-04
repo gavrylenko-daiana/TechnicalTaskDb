@@ -106,30 +106,35 @@ public class DeveloperConsoleManager : ConsoleManager<IDeveloperService, User>, 
 
     private async Task SendToSubmitByTesterAsync(User developer)
     {
-        var tasks = await Service.GetTasksAnotherDeveloperAsync(developer);
-
-        if (tasks.Any())
+        try
         {
-            foreach (var task in tasks)
+            var tasks = await Service.GetTasksAnotherDeveloperAsync(developer);
+
+            if (tasks.Any())
             {
-                if (task.Progress == Progress.InProgress)
+                foreach (var task in tasks)
                 {
-                    await _projectTaskManager.DisplayTaskAsync(task);
-                    Console.WriteLine($"Are you wanna send to submit this task?\n1 - Yes, 2 - No");
-                    var option = int.Parse(Console.ReadLine()!);
-
-                    if (option == 1)
+                    if (task.Progress == Progress.InProgress)
                     {
-                        var taskDeveloperEmail = await Service.GetDeveloperFromTask(task);
-                        await Service.UpdateProgressToWaitTester(task);
+                        await _projectTaskManager.DisplayTaskAsync(task);
+                        Console.WriteLine($"Are you wanna send to submit this task?\n1 - Yes, 2 - No");
+                        var option = int.Parse(Console.ReadLine()!);
 
-                        await Service.SendMailToUserAsync(developer.Email,
-                            $"The task - {task.Name} has been changed from InProgress to WaitingTester");
-                        await Service.SendMailToUserAsync(taskDeveloperEmail.Email,
-                            "A new task - {task.Name} awaits your review.");
+                        if (option == 1)
+                        {
+                            await Service.UpdateProgressToWaitTester(task);
+
+                            // await Service.SendMailToUserAsync(developer.Email,
+                            //     $"The task - {task.Name} has been changed from InProgress to WaitingTester");
+                        }
                     }
                 }
             }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            throw;
         }
     }
 

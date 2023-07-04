@@ -122,7 +122,7 @@ public class TesterService : GenericService<User>, ITesterService
         {
             task.Progress = Progress.InProgress;
             var project = await GetProjectByTaskAsync(task);
-            project.CountDoneTasks -= 1;
+            // project.CountDoneTasks -= 1;
             project.Tasks.First(t => t.Id == task.Id).Progress = task.Progress; 
                         
             await _projectTaskService.Update(task.Id, task);
