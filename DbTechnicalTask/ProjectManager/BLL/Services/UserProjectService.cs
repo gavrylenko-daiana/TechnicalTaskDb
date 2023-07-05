@@ -10,34 +10,20 @@ public class UserProjectService : GenericService<UserProject>, IUserProjectServi
     {
     }
 
-    public async Task AddUserAndProject(User stakeHolder, Project project)
-    {
-        if (stakeHolder == null) throw new ArgumentNullException(nameof(stakeHolder));
-        if (project == null) throw new ArgumentNullException(nameof(project));
-
-        try
-        {
-            await Add(new UserProject
-            {
-                User = stakeHolder,
-                Project = project,
-                UserId = stakeHolder.Id,
-                ProjectId = project.Id
-            });
-        }
-        catch (Exception ex)
-        {
-            throw new Exception(ex.Message);
-        }
-    }
-
     public async Task<UserProject> GetUserAndProject(Guid projectId)
     {
         if (projectId == Guid.Empty) throw new Exception(nameof(projectId));
         
-        var userProject = await GetByPredicate(up => up.ProjectId == projectId);
-        
-        return userProject;
+        try
+        {
+            var userProject = await GetByPredicate(up => up.ProjectId == projectId);
+
+            return userProject;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
     }
 
     public async Task<bool> IsUserInProject(Guid userId, Guid projectId)
@@ -53,8 +39,7 @@ public class UserProjectService : GenericService<UserProject>, IUserProjectServi
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
-            throw;
+            throw new Exception(e.Message);
         }
     }
     
@@ -72,8 +57,32 @@ public class UserProjectService : GenericService<UserProject>, IUserProjectServi
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
-            throw;
+            throw new Exception(e.Message);
+        }
+    }
+
+    public async Task AddUserProject(User user, Project project)
+    {
+        if (user == null) throw new ArgumentNullException(nameof(user));
+        if (project == null) throw new ArgumentNullException(nameof(project));
+
+        try
+        {
+            if (!await IsUserInProject(user.Id, project.Id))
+            {
+                var userProject = new UserProject
+                {
+                    UserId = user.Id,
+                    ProjectId = project.Id,
+                    User = user,
+                    Project = project
+                };
+                await Add(userProject);
+            }
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
         }
     }
 }

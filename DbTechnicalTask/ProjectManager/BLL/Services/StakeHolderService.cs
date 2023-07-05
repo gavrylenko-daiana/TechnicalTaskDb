@@ -157,10 +157,6 @@ public class StakeHolderService : GenericService<User>, IStakeHolderService
         try
         {
             await _projectService.CreateProject(projectName, projectDescription, stakeHolder, enteredDate);
-            // var project = await _projectService.GetProjectByName(nameOfProject);
-            // await _userProjectService.AddUserAndProject(stakeHolder, project);
-            // var getUserProject = await _userProjectService.GetUserAndProject(project.Id);
-            // stakeHolder.UserProjects.Add(getUserProject);
         }
         catch (Exception ex)
         {

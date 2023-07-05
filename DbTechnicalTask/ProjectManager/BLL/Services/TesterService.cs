@@ -101,11 +101,9 @@ public class TesterService : GenericService<User>, ITesterService
         {
             task.Progress = Progress.CompletedTask;
             await _projectTaskService.Update(task.Id, task);
-
             var project = await GetProjectByTaskAsync(task);
             project.CountDoneTasks += 1;
-            project.Tasks.First(t => t.Id == task.Id).Progress = task.Progress; 
-            
+            project.Tasks.First(t => t.Id == task.Id).Progress = task.Progress;
             await _projectService.Update(project.Id, project);
         }
         catch (Exception ex)
@@ -122,9 +120,7 @@ public class TesterService : GenericService<User>, ITesterService
         {
             task.Progress = Progress.InProgress;
             var project = await GetProjectByTaskAsync(task);
-            // project.CountDoneTasks -= 1;
-            project.Tasks.First(t => t.Id == task.Id).Progress = task.Progress; 
-                        
+            project.Tasks.First(t => t.Id == task.Id).Progress = task.Progress;
             await _projectTaskService.Update(task.Id, task);
             await _projectService.Update(project.Id, project);
         }

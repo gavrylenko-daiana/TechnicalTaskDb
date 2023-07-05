@@ -64,10 +64,8 @@ public class DeveloperConsoleManager : ConsoleManager<IDeveloperService, User>, 
         try
         {
             await _projectManager.DisplayAllProjectsAsync();
-
             Console.WriteLine("\nWrite the name of the project from which you want to take tasks.");
             var projectName = Console.ReadLine()!;
-
             var project = await Service.GetProjectByNameAsync(projectName);
             var tasks = project.Tasks;
 
@@ -87,8 +85,7 @@ public class DeveloperConsoleManager : ConsoleManager<IDeveloperService, User>, 
                         {
                             await Service.TakeTaskByDeveloper(task, developer, project);
                             await _projectManager.UpdateAsync(project.Id, project);
-
-                            //await Service.SendMailToUserAsync(developer.Email, "The task has been changed from Planned to InProgress");
+                            await Service.SendMailToUserAsync(developer.Email, "The task has been changed from Planned to InProgress");
                         }
                     }
                 }
@@ -123,9 +120,8 @@ public class DeveloperConsoleManager : ConsoleManager<IDeveloperService, User>, 
                         if (option == 1)
                         {
                             await Service.UpdateProgressToWaitTester(task);
-
-                            // await Service.SendMailToUserAsync(developer.Email,
-                            //     $"The task - {task.Name} has been changed from InProgress to WaitingTester");
+                            await Service.SendMailToUserAsync(developer.Email,
+                                $"The task - {task.Name} has been changed from InProgress to WaitingTester");
                         }
                     }
                 }
@@ -140,18 +136,27 @@ public class DeveloperConsoleManager : ConsoleManager<IDeveloperService, User>, 
 
     private async Task DisplayDeveloperAsync(User developer)
     {
-        Console.WriteLine($"\nUsername: {developer.Username}");
-        Console.WriteLine($"Email: {developer.Email}");
-
-        var tasks = await Service.GetDeveloperTasks(developer);
-
-        if (tasks.Any())
+        try
         {
-            Console.WriteLine($"Your current task(s): ");
-            foreach (var task in tasks)
+            Console.WriteLine($"\nUsername: {developer.Username}");
+            Console.WriteLine($"Email: {developer.Email}");
+
+            var tasks = await Service.GetDeveloperTasks(developer);
+
+            if (tasks.Any())
             {
-                Console.WriteLine(task.Name);
+                Console.WriteLine($"Your current task(s): ");
+                
+                foreach (var task in tasks)
+                {
+                    Console.WriteLine(task.Name);
+                }
             }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            throw;
         }
     }
 
@@ -183,12 +188,20 @@ public class DeveloperConsoleManager : ConsoleManager<IDeveloperService, User>, 
 
     private async Task DeleteDeveloperAsync(User developer)
     {
-        Console.WriteLine("Are you sure? 1 - Yes, 2 - No");
-        int choice = int.Parse(Console.ReadLine()!);
-
-        if (choice == 1)
+        try
         {
-            await Service.DeleteDeveloperFromTasks(developer);
+            Console.WriteLine("Are you sure? 1 - Yes, 2 - No");
+            int choice = int.Parse(Console.ReadLine()!);
+
+            if (choice == 1)
+            {
+                await Service.DeleteDeveloperFromTasks(developer);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            throw;
         }
     }
 }

@@ -377,37 +377,9 @@ public class ProjectTaskService : GenericService<ProjectTask>, IProjectTaskServi
                 Project = project
             };
             await Add(task);
-
-            var userProjectTaskStakeHolder = new UserTask
-            {
-                UserId = stakeHolder.Id,
-                ProjectTaskId = task.Id,
-                User = stakeHolder,
-                ProjectTask = task
-            };
-
-            var userProjectTaskTester = new UserTask
-            {
-                UserId = tester.Id,
-                ProjectTaskId = task.Id,
-                User = tester,
-                ProjectTask = task
-            };
-
-            await _userTask.Add(userProjectTaskStakeHolder);
-            await _userTask.Add(userProjectTaskTester);
-
-            if (!await _userProjectService.IsUserInProject(tester.Id, project.Id))
-            {
-                var userProjectTester = new UserProject
-                {
-                    UserId = tester.Id,
-                    ProjectId = project.Id,
-                    User = tester,
-                    Project = project
-                };
-                await _userProjectService.Add(userProjectTester);
-            }
+            await _userTask.AddUserTask(stakeHolder, task);
+            await _userTask.AddUserTask(tester, task);
+            await _userProjectService.AddUserProject(tester, project);
 
             return task;
         }

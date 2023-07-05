@@ -13,68 +13,100 @@ public class ProjectTaskConsoleManager : ConsoleManager<IProjectTaskService, Pro
 
     public async Task DisplayTaskAsync(ProjectTask task)
     {
-        var taskDeveloperEmail = await Service.GetDeveloperFromTask(task);
-        var taskTesterEmail = await Service.GetTesterFromTask(task);
-        Console.WriteLine($"\nName: {task.Name}");
+        try
+        {
+            var taskDeveloperEmail = await Service.GetDeveloperFromTask(task);
+            var taskTesterEmail = await Service.GetTesterFromTask(task);
+            Console.WriteLine($"\nName: {task.Name}");
 
-        if (!string.IsNullOrWhiteSpace(task.Description))
-            Console.WriteLine($"Description: {task.Description}");
+            if (!string.IsNullOrWhiteSpace(task.Description))
+                Console.WriteLine($"Description: {task.Description}");
 
-        if (taskDeveloperEmail != null)
-            Console.WriteLine($"Developer performing task: {taskDeveloperEmail.Username}");
+            if (taskDeveloperEmail != null)
+                Console.WriteLine($"Developer performing task: {taskDeveloperEmail.Username}");
 
-        Console.WriteLine($"Tester: {taskTesterEmail.Username}");
-        Console.WriteLine($"Priority: {task.Priority}");
-        Console.WriteLine($"DueDates: {task.DueDates.Date}");
-        Console.WriteLine($"Status: {task.Progress}\n");
+            Console.WriteLine($"Tester: {taskTesterEmail.Username}");
+            Console.WriteLine($"Priority: {task.Priority}");
+            Console.WriteLine($"DueDates: {task.DueDates.Date}");
+            Console.WriteLine($"Status: {task.Progress}\n");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            throw;
+        }
     }
 
     public async Task DisplayAllTaskByProject(List<ProjectTask> tasks)
     {
-        if (tasks.Any())
+        try
         {
-            foreach (var task in tasks)
+            if (tasks.Any())
             {
-                await DisplayTaskAsync(task);
+                foreach (var task in tasks)
+                {
+                    await DisplayTaskAsync(task);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Tasks list is empty");
             }
         }
-        else
+        catch (Exception e)
         {
-            Console.WriteLine("Tasks list is empty");
+            Console.WriteLine(e.Message);
+            throw;
         }
     }
     
     public async Task DisplayAllTaskByProjectPlanned(List<ProjectTask> tasks)
     {
-        if (tasks.Any())
+        try
         {
-            foreach (var task in tasks)
+            if (tasks.Any())
             {
-                if (task.Progress == Progress.Planned)
-                    await DisplayTaskAsync(task);
+                foreach (var task in tasks)
+                {
+                    if (task.Progress == Progress.Planned)
+                        await DisplayTaskAsync(task);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Tasks list is empty");
             }
         }
-        else
+        catch (Exception e)
         {
-            Console.WriteLine("Tasks list is empty");
+            Console.WriteLine(e.Message);
+            throw;
         }
     }
 
     public async Task DisplayAllTasks()
     {
-        var tasks = await GetAllAsync();
-        var projectTasks = tasks.ToList();
-
-        if (projectTasks.Any())
+        try
         {
-            foreach (var task in projectTasks)
+            var tasks = await GetAllAsync();
+            var projectTasks = tasks.ToList();
+
+            if (projectTasks.Any())
             {
-                await DisplayTaskAsync(task);
+                foreach (var task in projectTasks)
+                {
+                    await DisplayTaskAsync(task);
+                }
+            }
+            else
+            {
+                throw new Exception("Tasks list is empty");
             }
         }
-        else
+        catch (Exception e)
         {
-            throw new Exception("Tasks list is empty");
+            Console.WriteLine(e.Message);
+            throw;
         }
     }
     

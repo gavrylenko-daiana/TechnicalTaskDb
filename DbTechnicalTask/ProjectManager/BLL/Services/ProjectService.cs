@@ -42,7 +42,7 @@ public class ProjectService : GenericService<Project>, IProjectService
         
         try
         {
-            Project project = await GetByPredicate(p => p.Name == projectName);
+            var project = await GetByPredicate(p => p.Name == projectName);
 
             if (project == null) throw new ArgumentNullException(nameof(project));
 
@@ -71,8 +71,8 @@ public class ProjectService : GenericService<Project>, IProjectService
             throw new Exception(ex.Message);
         }
     }
-    
-    public async Task<List<Project>> GetProjectByTester(User tester)
+
+    private async Task<List<Project>> GetProjectByTester(User tester)
     {
         if (tester == null) throw new ArgumentNullException(nameof(tester));
         
@@ -97,7 +97,7 @@ public class ProjectService : GenericService<Project>, IProjectService
         try
         {
             var projects = await GetAll();
-            Project getProject = projects.FirstOrDefault(p => p.Tasks.Any(t => t.Name == task.Name))!;
+            var getProject = projects.FirstOrDefault(p => p.Tasks.Any(t => t.Name == task.Name))!;
 
             return getProject;
         }
@@ -242,7 +242,7 @@ public class ProjectService : GenericService<Project>, IProjectService
         }
     }
 
-    public async Task DeleteTasksWithProjectAsync(Project project)
+    private async Task DeleteTasksWithProjectAsync(Project project)
     {
         if (project == null) throw new ArgumentNullException(nameof(project));
         
@@ -256,7 +256,7 @@ public class ProjectService : GenericService<Project>, IProjectService
         }
     }
 
-    public async Task DeleteTaskFromProject(Project project, ProjectTask task)
+    private async Task DeleteTaskFromProject(Project project, ProjectTask task)
     {
         if (project == null) throw new ArgumentNullException(nameof(project));
         if (task == null) throw new ArgumentNullException(nameof(task));
@@ -334,15 +334,7 @@ public class ProjectService : GenericService<Project>, IProjectService
             };
             
             await Add(project);
-            
-            var userProject = new UserProject
-            {
-                UserId = stakeHolder.Id,
-                ProjectId = project.Id,
-                User = stakeHolder,
-                Project = project
-            };
-            await _userProjectService.Add(userProject);
+            await _userProjectService.AddUserProject(stakeHolder, project);
         }
         catch (Exception ex)
         {
@@ -446,5 +438,4 @@ public class ProjectService : GenericService<Project>, IProjectService
             throw new Exception(ex.Message);
         }
     }
-
 }

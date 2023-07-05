@@ -84,6 +84,7 @@ public class UserConsoleManager : ConsoleManager<IUserService, User>, IConsoleMa
                                   "'forgot' if you forgot your password.\n" +
                                   "Press 'Enter' for continue update your password.");
                 check = Console.ReadLine()!;
+                
                 if (check == "exit") return;
                 if (check == "forgot")
                 {
@@ -99,7 +100,6 @@ public class UserConsoleManager : ConsoleManager<IUserService, User>, IConsoleMa
                 {
                     Console.Write("Enter your new password.\nYour Password: ");
                     string newUserPassword = Console.ReadLine()!;
-
                     await Service.UpdatePassword(getUser.Id, newUserPassword);
                     return;
                 }
@@ -142,6 +142,7 @@ public class UserConsoleManager : ConsoleManager<IUserService, User>, IConsoleMa
         catch
         {
             Console.WriteLine($"You got an error!");
+            throw;
         }
     }
 

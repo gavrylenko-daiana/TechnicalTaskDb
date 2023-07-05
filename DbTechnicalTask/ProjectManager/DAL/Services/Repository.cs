@@ -8,8 +8,8 @@ namespace DAL.Services
 {
     public class Repository<T> : IRepository<T> where T : BaseEntity
     {
-        internal AppContext _context;
-        internal Microsoft.EntityFrameworkCore.DbSet<T> _dbSet;
+        private AppContext _context;
+        private Microsoft.EntityFrameworkCore.DbSet<T> _dbSet;
 
         public Repository(AppContext context)
         {

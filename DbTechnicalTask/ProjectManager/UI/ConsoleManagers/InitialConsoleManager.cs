@@ -30,7 +30,6 @@ public class InitialConsoleManager : ConsoleManager<IUserService, User>, IConsol
         {
             Console.WriteLine("Please, write your username or email.\nUsername or Email: ");
             string userInput = Console.ReadLine()!;
-
             Console.Write("Please, write your password.(if you forgot your password, write - 'forgot')\nPassword: ");
             string password = Console.ReadLine()!;
 
@@ -73,36 +72,48 @@ public class InitialConsoleManager : ConsoleManager<IUserService, User>, IConsol
 
     public async Task CreateUserAsync()
     {
-        Console.WriteLine("Create user");
-        Console.Write("Please, write your username.\nUsername: ");
-        string userName = Console.ReadLine()!;
+        try
+        {
+            Console.WriteLine("Create user");
+            Console.Write("Please, write your username.\nUsername: ");
+            string userName = Console.ReadLine()!;
 
-        if (!await _userConsoleManager.UserUniquenessCheck(userName)) return;
+            if (!await _userConsoleManager.UserUniquenessCheck(userName)) return;
 
-        Console.Write("Please, write your email.\nEmail: ");
-        string userEmail = Console.ReadLine()!;
-        
-        if (!await _userConsoleManager.UserUniquenessCheck(userEmail)) return;
+            Console.Write("Please, write your email.\nEmail: ");
+            string userEmail = Console.ReadLine()!;
 
-        Console.Write("Please, write your password.\nPassword: ");
-        string password = Console.ReadLine()!;
+            if (!await _userConsoleManager.UserUniquenessCheck(userEmail)) return;
 
-        UserRole role = await SelectRoleUser();
-
-        Console.WriteLine("User was successfully added");
-
-        await Service.AddNewUser(userName, userEmail, password, role);
+            Console.Write("Please, write your password.\nPassword: ");
+            string password = Console.ReadLine()!;
+            UserRole role = await SelectRoleUser();
+            Console.WriteLine("User was successfully added");
+            await Service.AddNewUser(userName, userEmail, password, role);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            throw;
+        }
     }
 
     private async Task<UserRole> SelectRoleUser()
     {
-        UserRole role = UserRole.Developer;
-        Console.WriteLine("Enter role for user: \n1) StakeHolder; 2) Developer; 3) Tester;");
-        int choice = int.Parse(Console.ReadLine()!);
+        try
+        {
+            UserRole role = UserRole.Developer;
+            Console.WriteLine("Enter role for user: \n1) StakeHolder; 2) Developer; 3) Tester;");
+            int choice = int.Parse(Console.ReadLine()!);
+            role = await Service.GetRole(role, choice);
 
-        role = await Service.GetRole(role, choice);
-
-        return role;
+            return role;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            throw;
+        }
     }
 
     public override async Task PerformOperationsAsync(User user)

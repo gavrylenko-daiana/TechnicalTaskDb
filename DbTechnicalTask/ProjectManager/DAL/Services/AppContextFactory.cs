@@ -12,7 +12,7 @@ public class AppContextFactory : IDesignTimeDbContextFactory<AppContext>
         return new AppContext(optionsBuilder.Options);
     }
 
-    public DbContextOptionsBuilder<AppContext> GetDbContextOptionsBuilder()
+    private DbContextOptionsBuilder<AppContext> GetDbContextOptionsBuilder()
     {
         var builder = new ConfigurationBuilder();
         builder.SetBasePath(Directory.GetCurrentDirectory());

@@ -153,14 +153,14 @@ public class TesterConsoleManager : ConsoleManager<ITesterService, User>, IConso
                                           "2. Need to fix");
                         int option = int.Parse(Console.ReadLine()!);
 
-                        // if (option == 1)
-                        //     await Service.SendMailToUserAsync(taskDeveloperEmail.Email,
-                        //         $"The task with the name {task.Name} and the deadline of {task.DueDates} has expired.\nThe message was sent from the tester - {taskTesterEmail.Username}.");
-                        // else if (option == 2)
-                        //     await Service.SendMailToUserAsync(taskDeveloperEmail.Email,
-                        //         $"The task with the name {task.Name} needs to be fixed.\nThe message was sent from the tester - {taskTesterEmail.Username}.");
-                        // else
-                        //     Console.WriteLine("Invalid operation number.");
+                        if (option == 1)
+                            await Service.SendMailToUserAsync(taskDeveloperEmail.Email,
+                                $"The task with the name {task.Name} and the deadline of {task.DueDates} has expired.\nThe message was sent from the tester - {taskTesterEmail.Username}.");
+                        else if (option == 2)
+                            await Service.SendMailToUserAsync(taskDeveloperEmail.Email,
+                                $"The task with the name {task.Name} needs to be fixed.\nThe message was sent from the tester - {taskTesterEmail.Username}.");
+                        else
+                            Console.WriteLine("Invalid operation number.");
 
                         break;
                     }

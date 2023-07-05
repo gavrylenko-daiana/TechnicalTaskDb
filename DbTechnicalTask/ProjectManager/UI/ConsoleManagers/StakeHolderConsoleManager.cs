@@ -86,7 +86,7 @@ public class StakeHolderConsoleManager : ConsoleManager<IStakeHolderService, Use
         {
             Console.Write($"\nYour username: {stakeHolder.Username}\n" +
                           $"Your email: {stakeHolder.Email}\n");
-        
+
             Console.Write("\nYour project(s):");
             await _projectManager.DisplayProjectsAsync(stakeHolder);
         }
@@ -99,7 +99,15 @@ public class StakeHolderConsoleManager : ConsoleManager<IStakeHolderService, Use
 
     private async Task CheckApprovedTasksAsync(User stakeHolder)
     {
-        await _projectManager.CheckApproveTasksCountAsync(stakeHolder);
+        try
+        {
+            await _projectManager.CheckApproveTasksCountAsync(stakeHolder);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            throw;
+        }
     }
 
     private async Task AddFileToTask(User stakeHolder)
@@ -118,7 +126,15 @@ public class StakeHolderConsoleManager : ConsoleManager<IStakeHolderService, Use
 
     private async Task UpdateProjectAsync(User stakeHolder)
     {
-        await _projectManager.UpdateProjectAsync(stakeHolder);
+        try
+        {
+            await _projectManager.UpdateProjectAsync(stakeHolder);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            throw;
+        }
     }
 
     private async Task DeleteOneProjectAsync(User stakeHolder)
@@ -207,7 +223,7 @@ public class StakeHolderConsoleManager : ConsoleManager<IStakeHolderService, Use
             Console.WriteLine("Create project");
             Console.Write("Please, write name of project.\nName: ");
             string projectName = Console.ReadLine()!;
-            
+
             if (await Service.ProjectIsAlreadyExistAsync(projectName)) return;
 
             string projectDescription;
@@ -222,16 +238,6 @@ public class StakeHolderConsoleManager : ConsoleManager<IStakeHolderService, Use
             Console.Write("Enter a due date for the project.\nDue date (dd.MM.yyyy): ");
             string[] date = Console.ReadLine()!.Split('.');
             DateTime enteredDate = await Service.UpdateDueDateInProjectAsync(date);
-            // await _testerManager.DisplayNameOfAllTester();
-            // Console.Write("\nWrite the username of the person who will be the tester for this project.\nTester: ");
-            // string testerName = Console.ReadLine()!;
-            // var tester = await Service.GetTesterByNameAsync(testerName);
-            
-            // if (tester == null)
-            // {
-            //     Console.WriteLine(nameof(tester));
-            //     return;
-            // }
 
             await Service.CreateProjectAsync(projectName, projectDescription, stakeHolder, enteredDate);
         }
@@ -241,45 +247,55 @@ public class StakeHolderConsoleManager : ConsoleManager<IStakeHolderService, Use
             throw;
         }
     }
-    
+
     public async Task<List<ProjectTask>> CreateTaskAsync(Project project)
     {
-        var tasks = new List<ProjectTask>();
-        string exit = String.Empty;
-
-        while (exit != "exit")
+        try
         {
-            Console.WriteLine("Create task");
-            Console.Write("Please, write name of task.\nName: ");
-            string taskName = Console.ReadLine()!;
+            var tasks = new List<ProjectTask>();
+            string exit = String.Empty;
 
-            if (await Service.ProjectTaskIsAlreadyExistAsync(taskName)) return null!;
+            while (exit != "exit")
+            {
+                Console.WriteLine("Create task");
+                Console.Write("Please, write name of task.\nName: ");
+                string taskName = Console.ReadLine()!;
 
-            Console.Write("Please, write description.\nDescription: ");
-            string taskDescription = Console.ReadLine()!;
-            Console.Write("Enter a due date for the task.\n" +
-                          "(Please note that the deadline should not exceed the deadline for the implementation of the project itself. Otherwise, the term will be set automatically - the maximum.)\n" +
-                          "Due date (dd.MM.yyyy): ");
-            string[] date = Console.ReadLine()!.Split('.');
-            var term = await Service.CreateDueDateForTaskAsync(project, date);
-            var priority = Priority.Low;
-            Console.WriteLine("Select task priority: \n1) Urgent; 2) High; 3) Medium; 4) Low; 5) Minor;");
-            int choice = int.Parse(Console.ReadLine()!);
-            priority = await Service.GetPriorityAsync(choice, priority);
-            await _testerManager.DisplayNameOfAllTester();
-            Console.Write("\nWrite the username of the person who will be the tester for this project.\nTester: ");
-            string testerName = Console.ReadLine()!;
-            var tester = await Service.GetTesterByNameAsync(testerName);
-            var stakeHolder = await Service.GetStakeHolderByProject(project);
+                if (await Service.ProjectTaskIsAlreadyExistAsync(taskName)) return null!;
 
-            var item = await Service.CreateTask(taskName, taskDescription, term, priority, tester, stakeHolder, project);
+                Console.Write("Please, write description.\nDescription: ");
+                string taskDescription = Console.ReadLine()!;
+                Console.Write("Enter a due date for the task.\n" +
+                              "(Please note that the deadline should not exceed the deadline for the implementation of the project itself. Otherwise, the term will be set automatically - the maximum.)\n" +
+                              "Due date (dd.MM.yyyy): ");
+                string[] date = Console.ReadLine()!.Split('.');
+                var term = await Service.CreateDueDateForTaskAsync(project, date);
+                var priority = Priority.Low;
+                Console.WriteLine("Select task priority: \n1) Urgent; 2) High; 3) Medium; 4) Low; 5) Minor;");
+                int choice = int.Parse(Console.ReadLine()!);
+                priority = await Service.GetPriorityAsync(choice, priority);
+                await _testerManager.DisplayNameOfAllTester();
+                Console.Write("\nWrite the username of the person who will be the tester for this project.\nTester: ");
+                string testerName = Console.ReadLine()!;
+                var tester = await Service.GetTesterByNameAsync(testerName);
+                var stakeHolder = await Service.GetStakeHolderByProject(project);
 
-            tasks.Add(item);
-            Console.WriteLine("Are you want to add next task in this project?\nWrite 'exit' - No, Press 'Enter' - yes");
-            exit = Console.ReadLine()!;
+                var item = await Service.CreateTask(taskName, taskDescription, term, priority, tester, stakeHolder,
+                    project);
+
+                tasks.Add(item);
+                Console.WriteLine(
+                    "Are you want to add next task in this project?\nWrite 'exit' - No, Press 'Enter' - yes");
+                exit = Console.ReadLine()!;
+            }
+
+            return tasks;
         }
-
-        return tasks;
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            throw;
+        }
     }
 
     private async Task CreateTaskToProjectAsync(User stakeHolder)
@@ -294,7 +310,7 @@ public class StakeHolderConsoleManager : ConsoleManager<IStakeHolderService, Use
             throw;
         }
     }
-    
+
     public async Task ChooseProjectToAddTasks(User stakeHolder)
     {
         try
@@ -320,7 +336,7 @@ public class StakeHolderConsoleManager : ConsoleManager<IStakeHolderService, Use
             throw;
         }
     }
-    
+
     private async Task CreateTaskForProject(Project project)
     {
         try
