@@ -12,8 +12,10 @@ public class DependencyRegistration
     {
         services.AddDbContext<AppContext>(options =>
         {
-            options.UseSqlServer(connectionString);
+            options.UseLazyLoadingProxies()
+                .UseSqlServer(connectionString);
         });
+        // services.AddDbContext<AppContext>();
         
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
     }

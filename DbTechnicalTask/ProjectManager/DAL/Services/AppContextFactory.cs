@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
-namespace DAL;
+namespace DAL.Services;
 
 public class AppContextFactory : IDesignTimeDbContextFactory<AppContext>
 {
@@ -16,13 +16,13 @@ public class AppContextFactory : IDesignTimeDbContextFactory<AppContext>
     {
         var builder = new ConfigurationBuilder();
         builder.SetBasePath(Directory.GetCurrentDirectory());
-        builder.AddJsonFile("appsettings.json");
+        builder.AddJsonFile("/Users/dayanagavrylenko/Desktop/Web/dotNet/DbTechnicalTask/DbTechnicalTask/ProjectManager/UI/bin/Debug/net6.0/appsettings.json");
         var config = builder.Build();
         string connectionString = config.GetConnectionString("DefaultConnection");
-    
+
         var optionsBuilder = new DbContextOptionsBuilder<AppContext>();
         optionsBuilder.UseSqlServer(connectionString);
-    
+
         return optionsBuilder;
     }
 }

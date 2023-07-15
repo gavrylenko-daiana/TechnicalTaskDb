@@ -7,7 +7,7 @@ namespace BLL;
 
 public class DependencyRegistration
 {
-    public static void RegisterServices(IServiceCollection services, string configurationString)
+    public static void RegisterServices(IServiceCollection services, string connectionString)
     {
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IProjectService, ProjectService>();
@@ -19,6 +19,6 @@ public class DependencyRegistration
         services.AddScoped<IUserProjectService, UserProjectService>();
         services.AddScoped<IUserTaskService, UserTaskService>();
 
-        DAL.DependencyRegistration.RegisterRepositories(services, configurationString);
+        DAL.DependencyRegistration.RegisterRepositories(services, connectionString);
     }
 }
